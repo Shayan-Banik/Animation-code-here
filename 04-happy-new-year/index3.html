@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEW Year Animation 🎆</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #0a0e1a 0%, #1a1f2e 100%);
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .title {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5em;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            z-index: 10;
+            opacity: 0;
+        }
+
+        .text-container {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            gap: 40px;
+            font-size: 5em;
+            font-weight: bold;
+            letter-spacing: 10px;
+        }
+
+        .letter {
+            opacity: 0;
+            color: transparent;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 1.8em;
+            }
+            .text-container {
+                font-size: 3em;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="canvas"></canvas>
+        <div class="title">NEW Year Animation🎆</div>
+        <div class="text-container" id="textDisplay">
+            <!-- Letters will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const textDisplay = document.getElementById('textDisplay');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        const words = ['HAPPY', 'NEW YEAR', '2026'];
+        let currentWordIndex = 0;
+        let currentLetters = [];
+        const particles = [];
+
+        class Particle {
+            constructor(x, y, color, angle, speed) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.angle = angle;
+                this.speed = speed;
+                this.radius = Math.random() * 2 + 1;
+                this.life = 1;
+                this.decay = Math.random() * 0.015 + 0.01;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.gravity = 0.05;
+            }
+
+            update() {
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Glow effect
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class Rocket {
+            constructor(x, y, targetX, targetY, color) {
+                this.x = x;
+                this.y = y;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.color = color;
+                this.radius = 2;
+                this.trail = [];
+            }
+
+            update() {
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 5) {
+                    this.x += dx * 0.1;
+                    this.y += dy * 0.1;
+                    this.trail.push({ x: this.x, y: this.y, alpha: 1 });
+                    if (this.trail.length > 10) this.trail.shift();
+                    return false;
+                }
+                return true;
+            }
+
+            draw() {
+                // Draw trail
+                this.trail.forEach((point, index) => {
+                    ctx.save();
+                    ctx.globalAlpha = (index / this.trail.length) * 0.5;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, this.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                // Draw rocket
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const rockets = [];
+        const colorSets = [
+            // HAPPY colors (0-4)
+            ['#FF6B9D', '#FF1744'],    // H - Pink/Red
+            ['#00E5FF', '#0091EA'],    // A - Cyan/Blue
+            ['#FFD700', '#FFA500'],    // P - Gold/Orange
+            ['#9C27B0', '#E040FB'],    // P - Purple/Magenta
+            ['#00E676', '#00C853'],    // Y - Green
+            // NEW YEAR colors (5-12)
+            ['#FF5722', '#FF6F00'],    // N - Deep Orange
+            ['#2196F3', '#1976D2'],    // E - Blue
+            ['#F50057', '#C51162'],    // W - Pink
+            ['#FFD700', '#FFA500'],    // (space) - Gold
+            ['#00BCD4', '#0097A7'],    // Y - Cyan
+            ['#8BC34A', '#689F38'],    // E - Light Green
+            ['#FFC107', '#FFA000'],    // A - Amber
+            ['#E91E63', '#C2185B'],    // R - Pink/Red
+            // 2026 colors (13-16)
+            ['#FF1744', '#D50000'],    // 2 - Red
+            ['#00E5FF', '#00B8D4'],    // 0 - Cyan
+            ['#FFD700', '#FF6F00'],    // 2 - Gold
+            ['#9C27B0', '#7B1FA2']     // 6 - Purple
+        ];
+
+        function createLetters(word) {
+            textDisplay.innerHTML = '';
+            currentLetters = [];
+            const chars = word.split('');
+            chars.forEach((char, index) => {
+                const letter = document.createElement('span');
+                letter.className = 'letter';
+                letter.textContent = char;
+                letter.setAttribute('data-char', char);
+                textDisplay.appendChild(letter);
+                currentLetters.push(letter);
+            });
+        }
+
+        function createFirework(x, y, color, charIndex) {
+            const particleCount = 80;
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const speed = Math.random() * 4 + 2;
+                const particleColor = colorSets[charIndex] ? colorSets[charIndex][Math.floor(Math.random() * 2)] : color;
+                particles.push(new Particle(x, y, particleColor, angle, speed));
+            }
+        }
+
+        function launchFirework(index) {
+            if (index >= currentLetters.length) return;
+
+            const letter = currentLetters[index];
+            const rect = letter.getBoundingClientRect();
+            const targetX = rect.left + rect.width / 2;
+            const targetY = rect.top + rect.height / 2;
+            
+            const startX = Math.random() * canvas.width;
+            const startY = canvas.height;
+            
+            let colorOffset = 0;
+            if (currentWordIndex === 1) colorOffset = 5; // NEW YEAR starts at index 5
+            else if (currentWordIndex === 2) colorOffset = 13; // 2026 starts at index 13
+            
+            const colorIndex = colorOffset + index;
+            const rocket = new Rocket(startX, startY, targetX, targetY, colorSets[colorIndex][0]);
+            rockets.push({ rocket, colorIndex, letter, launched: false });
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(10, 14, 26, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw rockets
+            rockets.forEach((item, idx) => {
+                const reached = item.rocket.update();
+                item.rocket.draw();
+
+                if (reached && !item.launched) {
+                    createFirework(item.rocket.targetX, item.rocket.targetY, item.rocket.color, item.colorIndex);
+                    item.launched = true;
+                    
+                    // Animate letter
+                    gsap.to(item.letter, {
+                        opacity: 1,
+                        scale: 1.2,
+                        duration: 0.3,
+                        ease: 'back.out'
+                    });
+                    gsap.to(item.letter, {
+                        color: colorSets[item.colorIndex][0],
+                        textShadow: `0 0 20px ${colorSets[item.colorIndex][0]}, 0 0 40px ${colorSets[item.colorIndex][1]}`,
+                        duration: 0.3
+                    });
+                    gsap.to(item.letter, {
+                        scale: 1,
+                        duration: 0.3,
+                        delay: 0.3
+                    });
+
+                    setTimeout(() => {
+                        rockets.splice(idx, 1);
+                    }, 100);
+                }
+            });
+
+            // Update and draw particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Animation sequence
+        gsap.to('.title', { opacity: 1, y: -20, duration: 1, delay: 0.5 });
+
+        function startWordAnimation(wordIndex) {
+            currentWordIndex = wordIndex;
+            createLetters(words[wordIndex]);
+            
+            // Wait a bit for DOM to update
+            setTimeout(() => {
+                currentLetters.forEach((letter, index) => {
+                    setTimeout(() => {
+                        launchFirework(index);
+                    }, index * 600);
+                });
+            }, 100);
+        }
+
+        // Animation timing
+        const happyDuration = 5 * 600 + 2000; // 5 letters * 600ms + 2s pause
+        const newYearDuration = 8 * 600 + 2000; // 8 letters (including space) * 600ms + 2s pause
+        const year2026Duration = 4 * 600 + 2000; // 4 digits * 600ms + 2s pause
+
+        // Start with HAPPY
+        startWordAnimation(0);
+
+        // After HAPPY, show NEW YEAR
+        setTimeout(() => {
+            startWordAnimation(1);
+        }, happyDuration);
+
+        // After NEW YEAR, show 2026
+        setTimeout(() => {
+            startWordAnimation(2);
+        }, happyDuration + newYearDuration);
+
+        // Repeat entire animation
+        setInterval(() => {
+            // Start with HAPPY
+            startWordAnimation(0);
+            
+            // Then NEW YEAR
+            setTimeout(() => {
+                startWordAnimation(1);
+            }, happyDuration);
+
+            // Then 2026
+            setTimeout(() => {
+                startWordAnimation(2);
+            }, happyDuration + newYearDuration);
+        }, happyDuration + newYearDuration + year2026Duration + 1000); // Total cycle + extra pause
+
+        animate();
+    </script>
+</body>
+</html>
