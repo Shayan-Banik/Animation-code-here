@@ -34,7 +34,5 @@
           }deg) rotateX(${-moveY * 0.5}deg)`;
         });
       });
-
-      // Initial call
       parallaxEffect();
   

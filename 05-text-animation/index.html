@@ -158,6 +158,8 @@
         </div>
     </div>
 
+    
+
     <script>
         gsap.registerPlugin(ScrollTrigger);
 
@@ -167,9 +169,15 @@
             // Animate all text elements with left/right entrance
             const animateElements = document.querySelectorAll('.animate-text');
             
+            // Detect if mobile device
+            const isMobile = window.innerWidth <= 768;
+            
             animateElements.forEach((element) => {
                 const direction = element.getAttribute('data-direction');
-                const startX = direction === 'left' ? -300 : 300;
+                // Use smaller offset for mobile, larger for desktop
+                const offset = isMobile ? 100 : 300;
+                const startX = direction === 'left' ? -offset : offset;
+                const duration = isMobile ? 0.6 : 1;
 
                 gsap.fromTo(element, 
                     {
@@ -186,7 +194,7 @@
                         },
                         x: 0,
                         opacity: 1,
-                        duration: 1,
+                        duration: duration,
                         ease: 'power2.out'
                     }
                 );
