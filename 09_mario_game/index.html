@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Running Man Game</title>
+   <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="startOverlay">
+      <button id="startButton">🎮 START GAME</button>
+    </div>
+
+    <div id="instructions">
+      <h2>🏃 Running Man</h2>
+      <p><span class="key">↑</span> or <span class="key">Space</span> Jump</p>
+      <p style="margin-top: 10px; color: #e31b23">💰 Collect coins!</p>
+      <p style="color: #8b0000">🌵 Avoid cacti!</p>
+    </div>
+
+    <div id="score">Score: 0</div>
+
+    <div id="gameCanvas">
+      <div id="player">
+        <div class="player-arms"></div>
+        <div class="player-leg-left"></div>
+        <div class="player-leg-right"></div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

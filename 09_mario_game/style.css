@@ -1,0 +1,311 @@
+ * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        overflow: hidden;
+        background: linear-gradient(
+          to bottom,
+          #5c94fc 0%,
+          #5c94fc 70%,
+          #7cbd56 70%,
+          #7cbd56 100%
+        );
+        font-family: "Arial", sans-serif;
+        height: 100vh;
+      }
+      #gameCanvas {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #player {
+        position: absolute;
+        width: 40px;
+        height: 60px;
+        bottom: 100px;
+        left: 100px;
+        transition: bottom 0.1s;
+        z-index: 10;
+      }
+
+      /* Player head */
+      #player::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 25px;
+        height: 25px;
+        background: #ffdbac;
+        border: 3px solid #333;
+        border-radius: 50%;
+      }
+
+      /* Player body */
+      #player::after {
+        content: "";
+        position: absolute;
+        top: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 3px;
+        height: 20px;
+        background: #333;
+      }
+
+      .player-arms {
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 30px;
+        height: 3px;
+        background: #333;
+        animation: swingArms 0.4s linear infinite;
+      }
+
+      @keyframes swingArms {
+        0%,
+        100% {
+          transform: translateX(-50%) rotate(-10deg);
+        }
+        50% {
+          transform: translateX(-50%) rotate(10deg);
+        }
+      }
+
+      .player-leg-left,
+      .player-leg-right {
+        position: absolute;
+        bottom: 0;
+        width: 3px;
+        height: 15px;
+        background: #333;
+        animation: runLeft 0.4s linear infinite;
+      }
+
+      .player-leg-left {
+        left: 12px;
+      }
+
+      .player-leg-right {
+        right: 12px;
+        animation: runRight 0.4s linear infinite;
+      }
+
+      @keyframes runLeft {
+        0%,
+        100% {
+          transform: rotate(20deg);
+        }
+        50% {
+          transform: rotate(-20deg);
+        }
+      }
+
+      @keyframes runRight {
+        0%,
+        100% {
+          transform: rotate(-20deg);
+        }
+        50% {
+          transform: rotate(20deg);
+        }
+      }
+
+      .obstacle {
+        position: absolute;
+        width: 40px;
+        height: 60px;
+        bottom: 100px;
+        background: #8b0000;
+        border: 3px solid #000;
+        border-radius: 5px;
+        animation: moveLeft 3s linear infinite;
+      }
+
+      .obstacle::before {
+        content: "🌵";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 35px;
+      }
+
+      .coin {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        bottom: 150px;
+        background: gold;
+        border: 3px solid #ffa500;
+        border-radius: 50%;
+        animation: moveLeft 3s linear infinite, spin 1s linear infinite;
+      }
+
+      .coin::before {
+        content: "$";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #ffa500;
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      @keyframes moveLeft {
+        0% {
+          left: 100%;
+        }
+        100% {
+          left: -100px;
+        }
+      }
+
+      @keyframes spin {
+        0%,
+        100% {
+          transform: scaleX(1);
+        }
+        50% {
+          transform: scaleX(0.3);
+        }
+      }
+
+      #instructions {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        z-index: 100;
+      }
+
+      #instructions h2 {
+        color: #e31b23;
+        margin-bottom: 10px;
+        font-size: 24px;
+      }
+
+      #instructions p {
+        margin: 8px 0;
+        font-size: 16px;
+        color: #333;
+      }
+
+      #instructions .key {
+        display: inline-block;
+        background: #333;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        margin: 0 3px;
+      }
+
+      #score {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #e31b23;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      #startOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      #startOverlay.hidden {
+        display: none;
+      }
+
+      #startButton,
+      #restartButton {
+        background: #e31b23;
+        color: white;
+        border: none;
+        padding: 20px 40px;
+        font-size: 28px;
+        border-radius: 10px;
+        cursor: pointer;
+        box-shadow: 0 6px 0 #991515;
+        transition: transform 0.1s;
+        margin: 10px;
+      }
+
+      #startButton:hover,
+      #restartButton:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 0 #991515;
+      }
+
+      #startButton:active,
+      #restartButton:active {
+        transform: translateY(2px);
+        box-shadow: 0 4px 0 #991515;
+      }
+
+      #gameOverText {
+        color: white;
+        font-size: 48px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-shadow: 3px 3px 0 #000;
+      }
+
+      #finalScore {
+        color: #ffd700;
+        font-size: 32px;
+        margin-bottom: 20px;
+      }
+
+      .cloud {
+        position: absolute;
+        background: white;
+        border-radius: 50px;
+        opacity: 0.8;
+        animation: moveClouds 20s linear infinite;
+      }
+
+      @keyframes moveClouds {
+        0% {
+          left: 100%;
+        }
+        100% {
+          left: -200px;
+        }
+      }
+
+      .ground-decoration {
+        position: absolute;
+        bottom: 70px;
+        width: 30px;
+        height: 30px;
+        font-size: 25px;
+        animation: moveLeft 4s linear infinite;
+      }
